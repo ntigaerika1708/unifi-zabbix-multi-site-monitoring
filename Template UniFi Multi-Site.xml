@@ -1,0 +1,708 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>7.0</version>
+    <template_groups>
+        <template_group>
+            <uuid>8e196c28d330490b9b1b9e2308336449</uuid>
+            <name>Templates/UniFi</name>
+        </template_group>
+    </template_groups>
+    <templates>
+        <template>
+            <uuid>a571c0d4b6f543c8b44bb8b3e5c3a3a3</uuid>
+            <template>Template UniFi Multi-Site</template>
+            <name>Template UniFi Multi-Site</name>
+            <description>Template para monitoramento de Access Points UniFi em múltiplos sites
+Requer:
+- Script zbx_unifi_ap_status.py no diretório externalscripts
+- Macro {$UNIFI_SITE} definida no host
+- Python 3 com requests instalado
+
+Sites de exemplo:
+- Default
+- Branch Office
+- Warehouse
+- Main Campus
+- Remote Site</description>
+            <groups>
+                <group>
+                    <name>Templates/UniFi</name>
+                </group>
+            </groups>
+            <items>
+                <item>
+                    <uuid>b681d3f4c2304c0bb4f4b8b3e5c3a3a4</uuid>
+                    <name>UniFi Devices Raw Data</name>
+                    <type>EXTERNAL</type>
+                    <key>zbx_unifi_ap_status.py[{$UNIFI_SITE}]</key>
+                    <delay>300s</delay>
+                    <history>7d</history>
+                    <value_type>TEXT</value_type>
+                    <trends>0</trends>
+                    <description>Dados brutos dos dispositivos UniFi do site {$UNIFI_SITE}</description>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.data</parameter>
+                            </parameters>
+                            <error_handler>CUSTOM_VALUE</error_handler>
+                            <error_handler_params>[]</error_handler_params>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                        <tag>
+                            <tag>unifi</tag>
+                            <value>controller</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>c781d3f4c2304c0bb4f4b8b3e5c3a3a5</uuid>
+                    <name>UniFi Total Devices</name>
+                    <type>DEPENDENT</type>
+                    <key>unifi.devices.total</key>
+                    <delay>0</delay>
+                    <history>30d</history>
+                    <value_type>FLOAT</value_type>
+                    <description>Número total de dispositivos UniFi no site (APs + Switches)</description>
+                    <preprocessing>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <parameters>
+                                <parameter>var devices = JSON.parse(value);
+var count = 0;
+for (var i = 0; i &lt; devices.length; i++) {
+    if (devices[i].type === "uap" || devices[i].type === "usw") {
+        count++;
+    }
+}
+return count;</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>zbx_unifi_ap_status.py[{$UNIFI_SITE}]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>c781d3f4c2304c0bb4f4b8b3e5c3a3a8</uuid>
+                    <name>UniFi Total Access Points</name>
+                    <type>DEPENDENT</type>
+                    <key>unifi.devices.total.ap</key>
+                    <delay>0</delay>
+                    <history>30d</history>
+                    <value_type>FLOAT</value_type>
+                    <description>Número total de Access Points UniFi no site</description>
+                    <preprocessing>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <parameters>
+                                <parameter>var devices = JSON.parse(value);
+var count = 0;
+for (var i = 0; i &lt; devices.length; i++) {
+    if (devices[i].type === "uap") {
+        count++;
+    }
+}
+return count;</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>zbx_unifi_ap_status.py[{$UNIFI_SITE}]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                        <tag>
+                            <tag>device-type</tag>
+                            <value>access-point</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>c781d3f4c2304c0bb4f4b8b3e5c3a3a9</uuid>
+                    <name>UniFi Total Switches</name>
+                    <type>DEPENDENT</type>
+                    <key>unifi.devices.total.switch</key>
+                    <delay>0</delay>
+                    <history>30d</history>
+                    <value_type>FLOAT</value_type>
+                    <description>Número total de Switches UniFi no site</description>
+                    <preprocessing>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <parameters>
+                                <parameter>var devices = JSON.parse(value);
+var count = 0;
+for (var i = 0; i &lt; devices.length; i++) {
+    if (devices[i].type === "usw") {
+        count++;
+    }
+}
+return count;</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>zbx_unifi_ap_status.py[{$UNIFI_SITE}]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                        <tag>
+                            <tag>device-type</tag>
+                            <value>switch</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>d881d3f4c2304c0bb4f4b8b3e5c3a3a6</uuid>
+                    <name>UniFi Online Devices</name>
+                    <type>DEPENDENT</type>
+                    <key>unifi.devices.online</key>
+                    <delay>0</delay>
+                    <history>30d</history>
+                    <value_type>FLOAT</value_type>
+                    <description>Número de dispositivos UniFi online (APs + Switches)</description>
+                    <preprocessing>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <parameters>
+                                <parameter>var devices = JSON.parse(value);
+var count = 0;
+for (var i = 0; i &lt; devices.length; i++) {
+    if ((devices[i].type === "uap" || devices[i].type === "usw") &amp;&amp; devices[i].state == 1) {
+        count++;
+    }
+}
+return count;</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>zbx_unifi_ap_status.py[{$UNIFI_SITE}]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>e981d3f4c2304c0bb4f4b8b3e5c3a3a7</uuid>
+                    <name>UniFi Offline Devices</name>
+                    <type>DEPENDENT</type>
+                    <key>unifi.devices.offline</key>
+                    <delay>0</delay>
+                    <history>30d</history>
+                    <value_type>FLOAT</value_type>
+                    <description>Número de dispositivos UniFi offline (APs + Switches)</description>
+                    <preprocessing>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <parameters>
+                                <parameter>var devices = JSON.parse(value);
+var count = 0;
+for (var i = 0; i &lt; devices.length; i++) {
+    if ((devices[i].type === "uap" || devices[i].type === "usw") &amp;&amp; devices[i].state == 0) {
+        count++;
+    }
+}
+return count;</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>zbx_unifi_ap_status.py[{$UNIFI_SITE}]</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                    </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>f081d3f4c2304c0bb4f4b8b3e5c3a3a8</uuid>
+                            <expression>last(/Template UniFi Multi-Site/unifi.devices.offline)&gt;0</expression>
+                            <name>UniFi: {ITEM.VALUE} dispositivo(s) offline no site {$UNIFI_SITE}</name>
+                            <priority>AVERAGE</priority>
+                            <description>Um ou mais dispositivos UniFi estão offline</description>
+                            <tags>
+                                <tag>
+                                    <tag>scope</tag>
+                                    <value>availability</value>
+                                </tag>
+                            </tags>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>a082d3f4c2304c0bb4f4b8b3e5c3a3a9</uuid>
+                    <name>UniFi Devices Availability</name>
+                    <type>CALCULATED</type>
+                    <key>unifi.devices.availability</key>
+                    <delay>300s</delay>
+                    <history>30d</history>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <params>last(//unifi.devices.online)/(last(//unifi.devices.total)+0.001)*100</params>
+                    <description>Percentual de disponibilidade dos dispositivos UniFi</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                    </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>b182d3f4c2304c0bb4f4b8b3e5c3a3b0</uuid>
+                            <expression>last(/Template UniFi Multi-Site/unifi.devices.availability)&lt;90</expression>
+                            <name>UniFi: Baixa disponibilidade no site {$UNIFI_SITE} ({ITEM.VALUE}%)</name>
+                            <priority>WARNING</priority>
+                            <description>Disponibilidade dos dispositivos UniFi está abaixo de 90%</description>
+                            <tags>
+                                <tag>
+                                    <tag>scope</tag>
+                                    <value>availability</value>
+                                </tag>
+                            </tags>
+                        </trigger>
+                        <trigger>
+                            <uuid>c282d3f4c2304c0bb4f4b8b3e5c3a3b1</uuid>
+                            <expression>last(/Template UniFi Multi-Site/unifi.devices.availability)&lt;70</expression>
+                            <name>UniFi: Disponibilidade crítica no site {$UNIFI_SITE} ({ITEM.VALUE}%)</name>
+                            <priority>HIGH</priority>
+                            <description>Disponibilidade dos dispositivos UniFi está abaixo de 70%</description>
+                            <tags>
+                                <tag>
+                                    <tag>scope</tag>
+                                    <value>availability</value>
+                                </tag>
+                            </tags>
+                        </trigger>
+                    </triggers>
+                </item>
+            </items>
+            <discovery_rules>
+                <discovery_rule>
+                    <uuid>d382d3f4c2304c0bb4f4b8b3e5c3a3b2</uuid>
+                    <name>UniFi Devices Discovery</name>
+                    <type>DEPENDENT</type>
+                    <key>unifi.devices.discovery</key>
+                    <delay>0</delay>
+                    <enabled_lifetime_type>DISABLE_NEVER</enabled_lifetime_type>
+                    <description>Descoberta automática de dispositivos UniFi</description>
+                    <item_prototypes>
+                        <item_prototype>
+                            <uuid>80165e4e06ed42cc96c2e87b16856803</uuid>
+                            <name>Device {#DEVICE_NAME}: Name</name>
+                            <type>DEPENDENT</type>
+                            <key>unifi.device.name[{#DEVICE_MAC}]</key>
+                            <delay>0</delay>
+                            <history>30d</history>
+                            <value_type>TEXT</value_type>
+                            <trends>0</trends>
+                            <preprocessing>
+                                <step>
+                                    <type>JAVASCRIPT</type>
+                                    <parameters>
+                                        <parameter>var devices = JSON.parse(value);
+for (var i = 0; i &lt; devices.length; i++) {
+    if (devices[i].mac === "{#DEVICE_MAC}") {
+        return devices[i].name || "{#DEVICE_NAME}";
+    }
+}
+return "{#DEVICE_NAME}";</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>zbx_unifi_ap_status.py[{$UNIFI_SITE}]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>network</value>
+                                </tag>
+                                <tag>
+                                    <tag>device</tag>
+                                    <value>{#DEVICE_NAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>c882d3f4c2304c0bb4f4b8b3e5c3a3b7</uuid>
+                            <name>Device {#DEVICE_NAME}: IP Address</name>
+                            <type>DEPENDENT</type>
+                            <key>unifi.device.ip[{#DEVICE_MAC}]</key>
+                            <delay>0</delay>
+                            <history>7d</history>
+                            <value_type>TEXT</value_type>
+                            <trends>0</trends>
+                            <preprocessing>
+                                <step>
+                                    <type>JAVASCRIPT</type>
+                                    <parameters>
+                                        <parameter>var devices = JSON.parse(value);
+for (var i = 0; i &lt; devices.length; i++) {
+    if (devices[i].mac === "{#DEVICE_MAC}") {
+        return devices[i].ip || "Unknown";
+    }
+}
+return "Unknown";</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>zbx_unifi_ap_status.py[{$UNIFI_SITE}]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>network</value>
+                                </tag>
+                                <tag>
+                                    <tag>device</tag>
+                                    <value>{#DEVICE_NAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>d982d3f4c2304c0bb4f4b8b3e5c3a3b8</uuid>
+                            <name>Device {#DEVICE_NAME}: Model</name>
+                            <type>DEPENDENT</type>
+                            <key>unifi.device.model[{#DEVICE_MAC}]</key>
+                            <delay>0</delay>
+                            <history>30d</history>
+                            <value_type>TEXT</value_type>
+                            <trends>0</trends>
+                            <preprocessing>
+                                <step>
+                                    <type>JAVASCRIPT</type>
+                                    <parameters>
+                                        <parameter>var devices = JSON.parse(value);
+for (var i = 0; i &lt; devices.length; i++) {
+    if (devices[i].mac === "{#DEVICE_MAC}") {
+        return devices[i].model || "Unknown";
+    }
+}
+return "Unknown";</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>zbx_unifi_ap_status.py[{$UNIFI_SITE}]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>network</value>
+                                </tag>
+                                <tag>
+                                    <tag>device</tag>
+                                    <value>{#DEVICE_NAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>e482d3f4c2304c0bb4f4b8b3e5c3a3b3</uuid>
+                            <name>Device {#DEVICE_NAME}: Status</name>
+                            <type>DEPENDENT</type>
+                            <key>unifi.device.status[{#DEVICE_MAC}]</key>
+                            <delay>0</delay>
+                            <history>30d</history>
+                            <value_type>FLOAT</value_type>
+                            <preprocessing>
+                                <step>
+                                    <type>JAVASCRIPT</type>
+                                    <parameters>
+                                        <parameter>var devices = JSON.parse(value);
+for (var i = 0; i &lt; devices.length; i++) {
+    if (devices[i].mac === "{#DEVICE_MAC}") {
+        return devices[i].state || 0;
+    }
+}
+return 0;</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>zbx_unifi_ap_status.py[{$UNIFI_SITE}]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>network</value>
+                                </tag>
+                                <tag>
+                                    <tag>device</tag>
+                                    <value>{#DEVICE_NAME}</value>
+                                </tag>
+                                <tag>
+                                    <tag>mac</tag>
+                                    <value>{#DEVICE_MAC}</value>
+                                </tag>
+                            </tags>
+                            <valuemap>
+                                <name>UniFi Device State</name>
+                            </valuemap>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <uuid>f582d3f4c2304c0bb4f4b8b3e5c3a3b4</uuid>
+                                    <expression>last(/Template UniFi Multi-Site/unifi.device.status[{#DEVICE_MAC}])=0</expression>
+                                    <name>UniFi Device {#DEVICE_NAME} está offline</name>
+                                    <priority>AVERAGE</priority>
+                                    <description>Dispositivo UniFi {#DEVICE_NAME} ({#DEVICE_MAC}) está offline</description>
+                                    <manual_close>YES</manual_close>
+                                    <tags>
+                                        <tag>
+                                            <tag>device</tag>
+                                            <value>{#DEVICE_NAME}</value>
+                                        </tag>
+                                        <tag>
+                                            <tag>scope</tag>
+                                            <value>availability</value>
+                                        </tag>
+                                    </tags>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>a682d3f4c2304c0bb4f4b8b3e5c3a3b5</uuid>
+                            <name>Device {#DEVICE_NAME}: Uptime</name>
+                            <type>DEPENDENT</type>
+                            <key>unifi.device.uptime[{#DEVICE_MAC}]</key>
+                            <delay>0</delay>
+                            <history>30d</history>
+                            <value_type>FLOAT</value_type>
+                            <units>uptime</units>
+                            <preprocessing>
+                                <step>
+                                    <type>JAVASCRIPT</type>
+                                    <parameters>
+                                        <parameter>var devices = JSON.parse(value);
+for (var i = 0; i &lt; devices.length; i++) {
+    if (devices[i].mac === "{#DEVICE_MAC}") {
+        return devices[i].uptime || 0;
+    }
+}
+return 0;</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>zbx_unifi_ap_status.py[{$UNIFI_SITE}]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>network</value>
+                                </tag>
+                                <tag>
+                                    <tag>device</tag>
+                                    <value>{#DEVICE_NAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>b782d3f4c2304c0bb4f4b8b3e5c3a3b6</uuid>
+                            <name>Device {#DEVICE_NAME}: Version</name>
+                            <type>DEPENDENT</type>
+                            <key>unifi.device.version[{#DEVICE_MAC}]</key>
+                            <delay>0</delay>
+                            <history>30d</history>
+                            <value_type>TEXT</value_type>
+                            <trends>0</trends>
+                            <preprocessing>
+                                <step>
+                                    <type>JAVASCRIPT</type>
+                                    <parameters>
+                                        <parameter>var devices = JSON.parse(value);
+for (var i = 0; i &lt; devices.length; i++) {
+    if (devices[i].mac === "{#DEVICE_MAC}") {
+        return devices[i].version || "Unknown";
+    }
+}
+return "Unknown";</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>zbx_unifi_ap_status.py[{$UNIFI_SITE}]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>network</value>
+                                </tag>
+                                <tag>
+                                    <tag>device</tag>
+                                    <value>{#DEVICE_NAME}</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>f682d3f4c2304c0bb4f4b8b3e5c3a3b7</uuid>
+                            <name>Device {#DEVICE_NAME}: Summary</name>
+                            <type>DEPENDENT</type>
+                            <key>unifi.device.summary[{#DEVICE_MAC}]</key>
+                            <delay>0</delay>
+                            <history>30d</history>
+                            <value_type>TEXT</value_type>
+                            <trends>0</trends>
+                            <preprocessing>
+                                <step>
+                                    <type>JAVASCRIPT</type>
+                                    <parameters>
+                                        <parameter>var devices = JSON.parse(value);
+for (var i = 0; i &lt; devices.length; i++) {
+    if (devices[i].mac === "{#DEVICE_MAC}") {
+        var device = devices[i];
+        var status = device.state == 1 ? "Online" : "Offline";
+        var deviceType = device.type === "uap" ? "AP" : "Switch";
+        return device.name + " | " + device.ip + " | " + status + " | " + deviceType + " | " + device.model;
+    }
+}
+return "{#DEVICE_NAME} | Unknown | Unknown | Unknown | Unknown";</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <master_item>
+                                <key>zbx_unifi_ap_status.py[{$UNIFI_SITE}]</key>
+                            </master_item>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>network</value>
+                                </tag>
+                                <tag>
+                                    <tag>device</tag>
+                                    <value>{#DEVICE_NAME}</value>
+                                </tag>
+                                <tag>
+                                    <tag>summary</tag>
+                                    <value>dashboard</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                    </item_prototypes>
+                    <master_item>
+                        <key>zbx_unifi_ap_status.py[{$UNIFI_SITE}]</key>
+                    </master_item>
+                    <lld_macro_paths>
+                        <lld_macro_path>
+                            <lld_macro>{#DEVICE_NAME}</lld_macro>
+                            <path>$.name</path>
+                        </lld_macro_path>
+                        <lld_macro_path>
+                            <lld_macro>{#DEVICE_MAC}</lld_macro>
+                            <path>$.mac</path>
+                        </lld_macro_path>
+                        <lld_macro_path>
+                            <lld_macro>{#DEVICE_MODEL}</lld_macro>
+                            <path>$.model</path>
+                        </lld_macro_path>
+                        <lld_macro_path>
+                            <lld_macro>{#DEVICE_IP}</lld_macro>
+                            <path>$.ip</path>
+                        </lld_macro_path>
+                    </lld_macro_paths>
+                    <preprocessing>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <parameters>
+                                <parameter>var devices = JSON.parse(value);
+var result = [];
+
+for (var i = 0; i &lt; devices.length; i++) {
+    var device = devices[i];
+    
+    // Inclui tanto APs (uap) quanto switches (usw)
+    if (device.type === "uap" || device.type === "usw") {
+        var deviceName = device.name || device.model || device.mac || "Unknown Device";
+        
+        // Remove caracteres especiais do nome se necessário
+        deviceName = deviceName.replace(/[^\w\s\-\.]/g, '').trim();
+        
+        // Se o nome ficou vazio após a limpeza, usa fallbacks
+        if (!deviceName) {
+            deviceName = device.model || device.mac || "Unknown Device";
+        }
+        
+        result.push({
+            "name": deviceName,
+            "mac": device.mac,
+            "model": device.model || "Unknown Model",
+            "ip": device.ip || "Unknown IP"
+        });
+    }
+}
+
+return JSON.stringify(result);</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                </discovery_rule>
+            </discovery_rules>
+            <macros>
+                <macro>
+                    <macro>{$SNMP_COMMUNITY}</macro>
+                    <value>public</value>
+                </macro>
+                <macro>
+                    <macro>{$UNIFI_SITE}</macro>
+                    <value>Default</value>
+                    <description>Nome do site UniFi para monitoramento (Default, Mbiotech, LgTech, Laudo Laboratorio, LG2C)</description>
+                </macro>
+            </macros>
+            <valuemaps>
+                <valuemap>
+                    <uuid>ea82d3f4c2304c0bb4f4b8b3e5c3a3b9</uuid>
+                    <name>UniFi Device State</name>
+                    <mappings>
+                        <mapping>
+                            <value>0</value>
+                            <newvalue>Offline</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>1</value>
+                            <newvalue>Online</newvalue>
+                        </mapping>
+                    </mappings>
+                </valuemap>
+                <valuemap>
+                    <uuid>ea82d3f4c2304c0bb4f4b8b3e5c3a3c0</uuid>
+                    <name>UniFi Device Type</name>
+                    <mappings>
+                        <mapping>
+                            <value>uap</value>
+                            <newvalue>Access Point</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>usw</value>
+                            <newvalue>Switch</newvalue>
+                        </mapping>
+                    </mappings>
+                </valuemap>
+            </valuemaps>
+        </template>
+    </templates>
+</zabbix_export>
