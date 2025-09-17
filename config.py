@@ -5,7 +5,7 @@ Customize these settings for your environment
 
 # UniFi Controller Settings
 UNIFI_CONTROLLER = {
-    'host': 'https://192.168.11.220:8443',  # Your UniFi Controller URL
+    'host': 'https://192.168.1.20:8443',  # Your UniFi Controller URL
     'username': 'zabbix',                   # Monitoring user
     'password': 'zabbix',                   # User password
     'verify_ssl': False,                    # Set to True if using valid SSL cert
